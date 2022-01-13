@@ -1,3 +1,4 @@
+import 'package:alarm_app/screens/alarmScreen.dart';
 import 'package:flutter/material.dart';
 
 import 'clockScreen.dart';
@@ -17,38 +18,39 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           toolbarHeight: 120.0,
           backgroundColor: Color(0xFF2D2F41),
-          title: Text(
-            "My Alarm ",
-            style: TextStyle(
-              fontSize: 22.0,
+          title: Padding(
+            padding: const EdgeInsets.only(
+              top: 12.0,
+            ),
+            child: Text(
+              "My Alarm ",
+              style: TextStyle(
+                fontSize: 22.0,
+              ),
             ),
           ),
           centerTitle: true,
           bottom: TabBar(
+            unselectedLabelColor: Colors.white54,
             labelPadding: EdgeInsets.only(
               bottom: 10.0,
             ),
             tabs: [
               Tab(
-                icon: Image.asset(
-                  "assets/clock_icon.png",
-                  scale: 1.5,
-                ),
-                text: "Clock",
+                icon: Icon(Icons.access_alarm),
+                text: "Alarm",
               ),
               Tab(
-                  icon: Image.asset(
-                    "assets/alarm_icon.png",
-                    scale: 1.5,
-                  ),
-                  text: "Alarm"),
+                icon: Icon(Icons.alarm),
+                text: "Alarm",
+              ),
             ],
           ),
         ),
         body: TabBarView(
           children: <Widget>[
             ClockScreen(),
-            Container(),
+            AlarmScreen(),
           ],
         ),
       ),

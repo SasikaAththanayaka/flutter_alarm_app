@@ -8,6 +8,19 @@ class AlarmScreen extends StatefulWidget {
 class _AlarmScreenState extends State<AlarmScreen> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Container(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            "Alarm",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 32.0,
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
