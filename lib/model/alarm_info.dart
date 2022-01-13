@@ -8,4 +8,5 @@ class AlarmInfo {
 
 List<AlarmInfo> alarm = [
   AlarmInfo(DateTime.now().add(Duration(hours: 1)), description: "Office"),
+  AlarmInfo(DateTime.now().add(Duration(hours: 1)), description: "School"),
 ];
