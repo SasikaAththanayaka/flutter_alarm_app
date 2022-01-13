@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
       title: 'Alarm App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Theme.of(context).primaryColor,
       ),
       home: HomeScreen(),
     );
