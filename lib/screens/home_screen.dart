@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           centerTitle: true,
           bottom: TabBar(
+            indicatorColor: Colors.white38,
             unselectedLabelColor: Colors.white54,
             labelPadding: EdgeInsets.only(
               bottom: 10.0,
