@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alarm_app/screens/alarmScreen.dart';
 import 'package:flutter/material.dart';
 
@@ -9,6 +11,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    Timer.periodic(Duration(microseconds: 1), (timer) {
+      setState(() {});
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -35,10 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
             labelPadding: EdgeInsets.only(
               bottom: 10.0,
             ),
-            tabs: [
+            tabs: <Widget>[
               Tab(
                 icon: Icon(Icons.access_alarm),
-                text: "Alarm",
+                text: "Clock",
               ),
               Tab(
                 icon: Icon(Icons.alarm),
