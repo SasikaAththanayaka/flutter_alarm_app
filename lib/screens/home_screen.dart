@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:alarm_app/main.dart';
 import 'package:alarm_app/screens/alarmScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'clockScreen.dart';
 
@@ -17,6 +19,13 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {});
     });
     super.initState();
+
+    var androidInitialize = new AndroidInitializationSettings('clock_icon');
+    var iosInitialize = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(
+        android: androidInitialize, iOS: iosInitialize);
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
   @override
@@ -26,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         backgroundColor: Color(0xFF2D2F41),
         appBar: AppBar(
-          toolbarHeight: 120.0,
+          toolbarHeight: 50.0,
           backgroundColor: Color(0xFF2D2F41),
           title: Padding(
             padding: const EdgeInsets.only(

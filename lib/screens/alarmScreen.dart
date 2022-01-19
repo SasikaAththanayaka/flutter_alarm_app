@@ -1,5 +1,8 @@
 import 'package:alarm_app/model/alarm_info.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import '../main.dart';
 
 class AlarmScreen extends StatefulWidget {
   @override
@@ -7,6 +10,33 @@ class AlarmScreen extends StatefulWidget {
 }
 
 class _AlarmScreenState extends State<AlarmScreen> {
+  Future showNotification() async {
+    var androidDetails = new AndroidNotificationDetails(
+      "Channel ID",
+      "Alarm App",
+      icon: "clock_icon",
+      importance: Importance.max,
+    );
+    var iosDetails = new IOSNotificationDetails();
+    var generalNotificationDetails = new NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+    /*await flutterLocalNotificationsPlugin.show(
+      0,
+      "OFFICE",
+      "Time is to office",
+      generalNotificationDetails,
+    );*/
+    var scheduledTime = DateTime.now().add(Duration(
+      hours: 0,
+      minutes: 0,
+      seconds: 1,
+    ));
+    flutterLocalNotificationsPlugin.schedule(1, "OFFICE", "Time to office",
+        scheduledTime, generalNotificationDetails);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,7 +126,9 @@ class _AlarmScreenState extends State<AlarmScreen> {
         focusElevation: 1.0,
         autofocus: false,
         backgroundColor: Colors.white54,
-        onPressed: () {},
+        onPressed: () {
+          showNotification();
+        },
         child: Icon(
           Icons.add,
           color: Colors.black,
