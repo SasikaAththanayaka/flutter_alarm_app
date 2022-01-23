@@ -1,13 +1,26 @@
 class AlarmInfo {
+  int id;
+  String title;
   DateTime alarmDateTime;
-  String description;
-  bool isActive;
+  bool isPending;
 
-  AlarmInfo(this.alarmDateTime, {this.description});
+  AlarmInfo({
+    this.id,
+    this.title,
+    this.alarmDateTime,
+    this.isPending,
+  });
+
+  factory AlarmInfo.fromMap(Map<String, dynamic> json) => AlarmInfo(
+        id: json["id"],
+        title: json["title"],
+        alarmDateTime: DateTime.parse(json["alarmDateTime"]),
+        isPending: json["isPending"],
+      );
+  Map<String, dynamic> toMap() => {
+        "id": id,
+        "title": title,
+        "alarmDateTime": alarmDateTime.toIso8601String(),
+        "isPending": isPending,
+      };
 }
-
-List<AlarmInfo> alarm = [
-  AlarmInfo(DateTime.now().add(Duration(hours: 1)), description: "Office"),
-  AlarmInfo(DateTime.now().add(Duration(hours: 1)), description: "School"),
-  AlarmInfo(DateTime.now().add(Duration(hours: 1)), description: "Uni"),
-];

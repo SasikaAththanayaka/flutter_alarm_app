@@ -1,6 +1,8 @@
+import 'package:alarm_app/model/alarm_helper.dart';
 import 'package:alarm_app/model/alarm_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 
 import '../main.dart';
 
@@ -10,6 +12,25 @@ class AlarmScreen extends StatefulWidget {
 }
 
 class _AlarmScreenState extends State<AlarmScreen> {
+  DateTime _alarmTime;
+  String _alarmTimeString;
+  AlarmHelper _alarmHelper = AlarmHelper();
+  //Future<List<AlarmInfo>> _alarms;
+
+  @override
+  void initState() {
+    _alarmTime = DateTime.now();
+    _alarmHelper.initializeDataBase().then((value) {
+      print('------database intialized');
+    });
+    super.initState();
+  }
+/*
+  void loadAlarms() {
+    _alarms = _alarmHelper.getAlarms();
+    if (mounted) setState(() {});
+  }*/
+
   Future showNotification() async {
     var androidDetails = new AndroidNotificationDetails(
       "Channel ID",
@@ -43,9 +64,9 @@ class _AlarmScreenState extends State<AlarmScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       backgroundColor: Color(0xFF2D2F41),
       body: ListView.builder(
-          itemCount: alarm.length,
+          itemCount: 2,
           itemBuilder: (BuildContext context, int index) {
-            final AlarmInfo a = alarm[index];
+            //final AlarmInfo a = alarm[index];
             return Container(
               margin: const EdgeInsets.only(
                 bottom: 5.0,
@@ -81,7 +102,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                         width: 8.0,
                       ),
                       Text(
-                        a.description,
+                        "a.description",
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 23.0,
@@ -127,7 +148,89 @@ class _AlarmScreenState extends State<AlarmScreen> {
         autofocus: false,
         backgroundColor: Colors.white54,
         onPressed: () {
-          showNotification();
+          //showNotification();
+          _alarmTimeString = DateFormat('HH:mm').format(DateTime.now());
+          showModalBottomSheet(
+            useRootNavigator: true,
+            context: context,
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            builder: (context) {
+              return StatefulBuilder(
+                builder: (context, setModalState) {
+                  return Container(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      children: [
+                        FlatButton(
+                          onPressed: () async {
+                            var selectedTime = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                            );
+                            if (selectedTime != null) {
+                              final now = DateTime.now();
+                              var selectedDateTime = DateTime(
+                                  now.year,
+                                  now.month,
+                                  now.day,
+                                  selectedTime.hour,
+                                  selectedTime.minute);
+                              _alarmTime = selectedDateTime;
+                              setModalState(() {
+                                _alarmTimeString = selectedTime.toString();
+                              });
+                            }
+                          },
+                          child: Text(
+                            _alarmTimeString,
+                            style: TextStyle(fontSize: 32),
+                          ),
+                        ),
+                        ListTile(
+                          title: Text('Repeat'),
+                          trailing: Icon(Icons.arrow_forward_ios),
+                        ),
+                        ListTile(
+                          title: Text('Sound'),
+                          trailing: Icon(Icons.arrow_forward_ios),
+                        ),
+                        ListTile(
+                          title: Text('Title'),
+                          trailing: Icon(Icons.arrow_forward_ios),
+                        ),
+                        FloatingActionButton.extended(
+                          onPressed: () async {
+                            DateTime scheduleAlarmDateTime;
+                            if (_alarmTime.isAfter(DateTime.now()))
+                              scheduleAlarmDateTime = _alarmTime;
+                            else
+                              scheduleAlarmDateTime =
+                                  _alarmTime.add(Duration(days: 1));
+
+                            var alarmInfo = AlarmInfo(
+                              alarmDateTime: scheduleAlarmDateTime,
+                              title: 'alarm',
+                            );
+                            _alarmHelper.insertAlarm(alarmInfo);
+                            // scheduleAlarm(
+                            //     scheduleAlarmDateTime);
+                          },
+                          icon: Icon(Icons.alarm),
+                          label: Text('Save'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          );
+          // scheduleAlarm();
         },
         child: Icon(
           Icons.add,
