@@ -1,56 +1,61 @@
 import 'package:alarm_app/model/alarm_info.dart';
 import 'package:sqflite/sqflite.dart';
-
-final String tableName = 'alarm';
-final String columnId = 'id';
-final String columnTitle = 'title';
-final String columnDateTime = 'alarmDateTime';
-final String columnPending = 'isPending';
+import 'package:path/path.dart';
 
 class AlarmHelper {
-  static Database _database;
-  static AlarmHelper _alarmHelper;
-
-  AlarmHelper._createInstance();
-  factory AlarmHelper() {
-    if (_alarmHelper == null) {
-      _alarmHelper = AlarmHelper._createInstance();
-    }
-    return _alarmHelper;
-  }
+  Database _database;
 
   Future<Database> get database async {
-    if (_database == null) {
-      _database = await initializeDataBase();
-    }
+    var dbpath = await getDatabasesPath();
+    const dbName = "alarm.db";
+    final path = join(dbpath, dbName);
+    _database = await openDatabase(path, version: 1, onCreate: _createDB);
+
     return _database;
   }
 
-  Future<Database> initializeDataBase() async {
-    var dir = await getDatabasesPath();
-    var path = dir + "alarm.db";
-
-    var database = await openDatabase(
-      path,
-      version: 1,
-      onCreate: (db, version) {
-        db.execute('''
-          create table $tableName ( 
-          $columnId integer primary key autoincrement,
-          $columnDateTime text not null, 
-          $columnTitle text not null,
-          $columnPending integer)
-        ''');
-      },
-    );
-
-    return database;
+  Future<void> _createDB(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE alarm(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        alarmDateTime Text,
+        ispending INTEGER
+      )
+    ''');
   }
 
-  void insertAlarm(AlarmInfo alarmInfo) async {
-    var db = await this.database;
-    var result = await db.insert('alarm', alarmInfo.toMap());
-    //print("result :$result");
-    print(result);
+  Future<void> insertTodo(AlarmInfo alarmInfo) async {
+    final db = await database;
+    await db.insert(
+      'alarm',
+      alarmInfo.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deleteTodo(int id) async {
+    final db = await database;
+    await db.delete(
+      'alarm',
+      where: 'id == ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<AlarmInfo>> getTodo() async {
+    final db = await database;
+    List<Map<String, dynamic>> items = await db.query(
+      'alarm',
+      orderBy: 'id DESC',
+    );
+    return List.generate(
+        items.length,
+        (index) => AlarmInfo(
+              id: items[index]['id'],
+              title: items[index]['title'],
+              alarmDateTime: DateTime.parse(items[index]['alarmDateTime']),
+              isPending: items[index]['isPending'] == 1 ? true : false,
+            ));
   }
 }

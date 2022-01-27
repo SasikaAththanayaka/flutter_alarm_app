@@ -1,5 +1,6 @@
 import 'package:alarm_app/model/alarm_helper.dart';
 import 'package:alarm_app/model/alarm_info.dart';
+import 'package:alarm_app/widgets/alarm_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
@@ -8,30 +9,28 @@ import '../main.dart';
 
 class AlarmScreen extends StatefulWidget {
   @override
-  _AlarmScreenState createState() => _AlarmScreenState();
+  State<AlarmScreen> createState() => _AlarmScreenState();
 }
 
 class _AlarmScreenState extends State<AlarmScreen> {
-  DateTime _alarmTime;
+  DateTime _alarmTime; /*= DateTime(2022, 1, 27, 20, 20);*/
   String _alarmTimeString;
-  AlarmHelper _alarmHelper = AlarmHelper();
-  //Future<List<AlarmInfo>> _alarms;
+  var db;
 
   @override
   void initState() {
     _alarmTime = DateTime.now();
-    _alarmHelper.initializeDataBase().then((value) {
-      print('------database intialized');
-    });
+    db = AlarmHelper();
+    loadAlarms();
     super.initState();
   }
-/*
-  void loadAlarms() {
-    _alarms = _alarmHelper.getAlarms();
-    if (mounted) setState(() {});
-  }*/
 
-  Future showNotification() async {
+  void loadAlarms() {
+    db.getTodo();
+    if (mounted) setState(() {});
+  }
+
+  Future showNotification(DateTime time) async {
     var androidDetails = new AndroidNotificationDetails(
       "Channel ID",
       "Alarm App",
@@ -49,13 +48,31 @@ class _AlarmScreenState extends State<AlarmScreen> {
       "Time is to office",
       generalNotificationDetails,
     );*/
-    var scheduledTime = DateTime.now().add(Duration(
+    /* var scheduledTime = DateTime.now().add(Duration(
       hours: 0,
       minutes: 0,
       seconds: 1,
-    ));
-    flutterLocalNotificationsPlugin.schedule(1, "OFFICE", "Time to office",
-        scheduledTime, generalNotificationDetails);
+    ));*/
+    flutterLocalNotificationsPlugin.schedule(
+        1, "OFFICE", "Time to office", time, generalNotificationDetails);
+  }
+
+  void onSaveAlarm() {
+    DateTime scheduleAlarmDateTime;
+    if (_alarmTime.isAfter(DateTime.now()))
+      scheduleAlarmDateTime = _alarmTime;
+    else
+      scheduleAlarmDateTime = _alarmTime.add(Duration(days: 1));
+
+    var alarmInfo = AlarmInfo(
+      title: 'alarm2',
+      alarmDateTime: scheduleAlarmDateTime,
+      isPending: true,
+    );
+    db.insertTodo(alarmInfo);
+    showNotification(scheduleAlarmDateTime);
+    //Navigator.pop(context);
+    loadAlarms();
   }
 
   @override
@@ -63,96 +80,44 @@ class _AlarmScreenState extends State<AlarmScreen> {
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       backgroundColor: Color(0xFF2D2F41),
-      body: ListView.builder(
-          itemCount: 2,
-          itemBuilder: (BuildContext context, int index) {
-            //final AlarmInfo a = alarm[index];
-            return Container(
-              margin: const EdgeInsets.only(
-                bottom: 5.0,
-                left: 20.0,
-                right: 20.0,
-                top: 15.0,
-              ),
-              //padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blueAccent, Colors.black54],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(
-                    24.0,
-                  ),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Icon(
-                        Icons.label,
-                        color: Colors.white,
-                        size: 24.0,
-                      ),
-                      SizedBox(
-                        width: 8.0,
-                      ),
-                      Text(
-                        "a.description",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 23.0,
-                            fontWeight: FontWeight.w400),
-                      ),
-                      Switch(
-                        value: true,
-                        activeColor: Colors.white,
-                        onChanged: (bool value) {},
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Text(
-                        "Mon-Fri",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                      Text(
-                        "7:00 PM",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w300),
-                      ),
-                      IconButton(
-                          icon: Icon(Icons.delete),
-                          color: Colors.white,
-                          onPressed: () {}),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          }),
+      body: Container(
+        child: FutureBuilder(
+          future: db.getTodo(),
+          initialData: const [],
+          builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+            var data = snapshot.data;
+            var dataLength = data.length;
+            return dataLength == 0
+                ? const Center(
+                    child: Text("No data found"),
+                  )
+                : ListView.builder(
+                    itemCount: dataLength,
+                    itemBuilder: (context, index) {
+                      if (data[index].alarmDateTime == DateTime.now()) {
+                        showNotification(data[index].alarmDateTime);
+                      }
+                      return AlarmCard(
+                        id: data[index].id,
+                        title: data[index].title,
+                        alarmDateTime: data[index].alarmDateTime,
+                        isPending: data[index].isPending,
+                        // insertFunction: () {},
+                        //deleteFunction: deleteFunction,
+                      );
+                    });
+          },
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
-        focusElevation: 1.0,
-        autofocus: false,
-        backgroundColor: Colors.white54,
+        child: Icon(Icons.add),
         onPressed: () {
-          //showNotification();
-          _alarmTimeString = DateFormat('HH:mm').format(DateTime.now());
+          //onSaveAlarm();
+
           showModalBottomSheet(
             useRootNavigator: true,
             context: context,
+            backgroundColor: Color(0xFF2D2F41),
             clipBehavior: Clip.antiAlias,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(
@@ -160,83 +125,82 @@ class _AlarmScreenState extends State<AlarmScreen> {
               ),
             ),
             builder: (context) {
-              return StatefulBuilder(
-                builder: (context, setModalState) {
-                  return Container(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      children: [
-                        FlatButton(
-                          onPressed: () async {
-                            var selectedTime = await showTimePicker(
-                              context: context,
-                              initialTime: TimeOfDay.now(),
-                            );
-                            if (selectedTime != null) {
-                              final now = DateTime.now();
-                              var selectedDateTime = DateTime(
-                                  now.year,
-                                  now.month,
-                                  now.day,
-                                  selectedTime.hour,
-                                  selectedTime.minute);
-                              _alarmTime = selectedDateTime;
-                              setModalState(() {
-                                _alarmTimeString = selectedTime.toString();
-                              });
-                            }
-                          },
+              return Container(
+                padding: const EdgeInsets.all(32),
+                //color: Colors.white,
+                child: Column(
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: () async {
+                        var selectedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        setState(() {
+                          final now = DateTime.now();
+                          var selectedDateTime = DateTime(now.year, now.month,
+                              now.day, selectedTime.hour, selectedTime.minute);
+                          _alarmTime = selectedDateTime;
+                        });
+                      },
+                      child: Container(
+                        //color: Colors.white,
+                        /*margin: EdgeInsets.only(
+                          left: 5.0,
+                          right: 5.0,
+                        ),*/
+                        width: MediaQuery.of(context).size.width * 0.9,
+                        child: Center(
                           child: Text(
-                            _alarmTimeString,
-                            style: TextStyle(fontSize: 32),
+                            DateFormat('HH:mm')
+                                .format(DateTime.now())
+                                .toString(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 30.0,
+                            ),
                           ),
                         ),
-                        ListTile(
-                          title: Text('Repeat'),
-                          trailing: Icon(Icons.arrow_forward_ios),
-                        ),
-                        ListTile(
-                          title: Text('Sound'),
-                          trailing: Icon(Icons.arrow_forward_ios),
-                        ),
-                        ListTile(
-                          title: Text('Title'),
-                          trailing: Icon(Icons.arrow_forward_ios),
-                        ),
-                        FloatingActionButton.extended(
-                          onPressed: () async {
-                            DateTime scheduleAlarmDateTime;
-                            if (_alarmTime.isAfter(DateTime.now()))
-                              scheduleAlarmDateTime = _alarmTime;
-                            else
-                              scheduleAlarmDateTime =
-                                  _alarmTime.add(Duration(days: 1));
-
-                            var alarmInfo = AlarmInfo(
-                              alarmDateTime: scheduleAlarmDateTime,
-                              title: 'alarm',
-                            );
-                            _alarmHelper.insertAlarm(alarmInfo);
-                            // scheduleAlarm(
-                            //     scheduleAlarmDateTime);
-                          },
-                          icon: Icon(Icons.alarm),
-                          label: Text('Save'),
-                        ),
-                      ],
+                      ),
                     ),
-                  );
-                },
+                    ListTile(
+                      iconColor: Colors.white,
+                      textColor: Colors.white,
+                      title: Text('Repeat'),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                    ),
+                    ListTile(
+                      iconColor: Colors.white,
+                      textColor: Colors.white,
+                      title: Text('Sound'),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                    ),
+                    ListTile(
+                      iconColor: Colors.white,
+                      textColor: Colors.white,
+                      title: Text('Title'),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                    ),
+                    FloatingActionButton.extended(
+                      backgroundColor: Colors.white,
+                      onPressed: onSaveAlarm,
+                      icon: Icon(
+                        Icons.alarm,
+                        color: Colors.black,
+                      ),
+                      label: Text(
+                        'Save',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           );
-          // scheduleAlarm();
         },
-        child: Icon(
-          Icons.add,
-          color: Colors.black,
-          size: 32.0,
-        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:alarm_app/main.dart';
 import 'package:alarm_app/screens/alarmScreen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -15,11 +16,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
-    Timer.periodic(Duration(microseconds: 1), (timer) {
+    Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {});
     });
     super.initState();
-
     var androidInitialize = new AndroidInitializationSettings('clock_icon');
     var iosInitialize = new IOSInitializationSettings();
     var initializationSettings = new InitializationSettings(
