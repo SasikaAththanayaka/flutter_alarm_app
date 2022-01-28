@@ -1,4 +1,5 @@
 import 'package:alarm_app/model/alarm_helper.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -79,6 +80,7 @@ class _AlarmCardState extends State<AlarmCard> {
             onPressed: () {
               var db = AlarmHelper();
               db.deleteTodo(widget.id);
+              //flutterLocalNotificationsPlugin.cancel(0);
             },
             icon: Icon(Icons.close),
             color: Colors.white,

@@ -13,8 +13,8 @@ class AlarmScreen extends StatefulWidget {
 }
 
 class _AlarmScreenState extends State<AlarmScreen> {
-  DateTime _alarmTime; /*= DateTime(2022, 1, 27, 20, 20);*/
-  String _alarmTimeString;
+  DateTime _alarmTime;
+  var textController;
   var db;
 
   @override
@@ -30,7 +30,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
     if (mounted) setState(() {});
   }
 
-  Future showNotification(DateTime time) async {
+  Future showNotification(DateTime time, AlarmInfo alarmInfo) async {
     var androidDetails = new AndroidNotificationDetails(
       "Channel ID",
       "Alarm App",
@@ -42,19 +42,15 @@ class _AlarmScreenState extends State<AlarmScreen> {
       android: androidDetails,
       iOS: iosDetails,
     );
-    /*await flutterLocalNotificationsPlugin.show(
-      0,
-      "OFFICE",
-      "Time is to office",
-      generalNotificationDetails,
-    );*/
-    /* var scheduledTime = DateTime.now().add(Duration(
-      hours: 0,
-      minutes: 0,
-      seconds: 1,
-    ));*/
+
+    // ignore: deprecated_member_use
     flutterLocalNotificationsPlugin.schedule(
-        1, "OFFICE", "Time to office", time, generalNotificationDetails);
+      1,
+      alarmInfo.title,
+      "Time to " + alarmInfo.title,
+      time,
+      generalNotificationDetails,
+    );
   }
 
   void onSaveAlarm() {
@@ -65,12 +61,12 @@ class _AlarmScreenState extends State<AlarmScreen> {
       scheduleAlarmDateTime = _alarmTime.add(Duration(days: 1));
 
     var alarmInfo = AlarmInfo(
-      title: 'alarm2',
+      title: textController,
       alarmDateTime: scheduleAlarmDateTime,
       isPending: true,
     );
     db.insertTodo(alarmInfo);
-    showNotification(scheduleAlarmDateTime);
+    showNotification(scheduleAlarmDateTime, alarmInfo);
     //Navigator.pop(context);
     loadAlarms();
   }
@@ -89,33 +85,33 @@ class _AlarmScreenState extends State<AlarmScreen> {
             var dataLength = data.length;
             return dataLength == 0
                 ? const Center(
-                    child: Text("No data found"),
+                    child: Text(
+                      "No data found",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.0,
+                      ),
+                    ),
                   )
                 : ListView.builder(
                     itemCount: dataLength,
-                    itemBuilder: (context, index) {
-                      if (data[index].alarmDateTime == DateTime.now()) {
-                        showNotification(data[index].alarmDateTime);
-                      }
-                      return AlarmCard(
-                        id: data[index].id,
-                        title: data[index].title,
-                        alarmDateTime: data[index].alarmDateTime,
-                        isPending: data[index].isPending,
-                        // insertFunction: () {},
-                        //deleteFunction: deleteFunction,
-                      );
-                    });
+                    itemBuilder: (context, index) => AlarmCard(
+                      id: data[index].id,
+                      title: data[index].title,
+                      alarmDateTime: data[index].alarmDateTime,
+                      isPending: data[index].isPending,
+                    ),
+                  );
           },
         ),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          //onSaveAlarm();
-
           showModalBottomSheet(
             useRootNavigator: true,
+            isDismissible: true,
+            elevation: 50.0,
             context: context,
             backgroundColor: Color(0xFF2D2F41),
             clipBehavior: Clip.antiAlias,
@@ -130,6 +126,9 @@ class _AlarmScreenState extends State<AlarmScreen> {
                 //color: Colors.white,
                 child: Column(
                   children: <Widget>[
+                    SizedBox(
+                      height: 20.0,
+                    ),
                     GestureDetector(
                       onTap: () async {
                         var selectedTime = await showTimePicker(
@@ -152,9 +151,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                         width: MediaQuery.of(context).size.width * 0.9,
                         child: Center(
                           child: Text(
-                            DateFormat('HH:mm')
-                                .format(DateTime.now())
-                                .toString(),
+                            DateFormat('HH:mm').format(_alarmTime).toString(),
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 30.0,
@@ -163,7 +160,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                         ),
                       ),
                     ),
-                    ListTile(
+                    /*ListTile(
                       iconColor: Colors.white,
                       textColor: Colors.white,
                       title: Text('Repeat'),
@@ -174,12 +171,45 @@ class _AlarmScreenState extends State<AlarmScreen> {
                       textColor: Colors.white,
                       title: Text('Sound'),
                       trailing: Icon(Icons.arrow_forward_ios),
+                    ),*/
+                    SizedBox(
+                      height: 40.0,
                     ),
-                    ListTile(
-                      iconColor: Colors.white,
-                      textColor: Colors.white,
-                      title: Text('Title'),
-                      trailing: Icon(Icons.arrow_forward_ios),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 25.0,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.white,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          15.0,
+                        ),
+                      ),
+                      child: TextField(
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20.0,
+                        ),
+                        //controller: textController,
+                        onSubmitted: (value) {
+                          setState(() {
+                            textController = value;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          hintText: 'add title',
+                          hintStyle: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20.0,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 40.0,
                     ),
                     FloatingActionButton.extended(
                       backgroundColor: Colors.white,
