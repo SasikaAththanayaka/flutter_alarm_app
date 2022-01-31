@@ -7,15 +7,15 @@ import 'package:intl/intl.dart';
 class AlarmCard extends StatefulWidget {
   final int id;
   final String title;
+  final int isPending;
   final DateTime alarmDateTime;
-  bool isPending;
 
   AlarmCard({
     Key key,
     this.id,
     this.title,
-    this.alarmDateTime,
     this.isPending,
+    this.alarmDateTime,
   }) : super(key: key);
   //final Function insertFunction;
   //final Function deleteFunction;
@@ -27,6 +27,7 @@ class _AlarmCardState extends State<AlarmCard> {
   @override
   Widget build(BuildContext context) {
     var alarmTime = DateFormat('hh:mm aa').format(widget.alarmDateTime);
+    //var s = new AlarmInfo();
     return Container(
       height: 100.0,
       margin: EdgeInsets.only(
@@ -50,8 +51,12 @@ class _AlarmCardState extends State<AlarmCard> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           Checkbox(
-            value: widget.isPending,
-            onChanged: (bool value) {},
+            value: true,
+            onChanged: (bool value) {
+              setState(() {
+                // s.isPending = value ? 1 : 0;
+              });
+            },
           ),
           Column(
             //crossAxisAlignment: CrossAxisAlignment.start,

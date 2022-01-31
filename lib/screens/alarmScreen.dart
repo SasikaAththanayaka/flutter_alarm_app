@@ -62,8 +62,8 @@ class _AlarmScreenState extends State<AlarmScreen> {
 
     var alarmInfo = AlarmInfo(
       title: textController,
+      isPending: 1  ,
       alarmDateTime: scheduleAlarmDateTime,
-      isPending: true,
     );
     db.insertTodo(alarmInfo);
     showNotification(scheduleAlarmDateTime, alarmInfo);
@@ -98,8 +98,8 @@ class _AlarmScreenState extends State<AlarmScreen> {
                     itemBuilder: (context, index) => AlarmCard(
                       id: data[index].id,
                       title: data[index].title,
-                      alarmDateTime: data[index].alarmDateTime,
                       isPending: data[index].isPending,
+                      alarmDateTime: data[index].alarmDateTime,
                     ),
                   );
           },

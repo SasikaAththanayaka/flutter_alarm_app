@@ -19,8 +19,8 @@ class AlarmHelper {
       CREATE TABLE alarm(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT,
-        alarmDateTime Text,
-        ispending INTEGER
+        ispending INTEGER ,
+        alarmDateTime Text   
       )
     ''');
   }
@@ -43,6 +43,16 @@ class AlarmHelper {
     );
   }
 
+  Future<void> updateTodo(AlarmInfo alarmInfo) async {
+    final db = await database;
+    await db.update(
+      'alarm',
+      alarmInfo.toMap(),
+      where: 'id == ?',
+      whereArgs: [alarmInfo.id],
+    );
+  }
+
   Future<List<AlarmInfo>> getTodo() async {
     final db = await database;
     List<Map<String, dynamic>> items = await db.query(
@@ -54,8 +64,8 @@ class AlarmHelper {
         (index) => AlarmInfo(
               id: items[index]['id'],
               title: items[index]['title'],
+              isPending: items[index]['isPending'],
               alarmDateTime: DateTime.parse(items[index]['alarmDateTime']),
-              isPending: items[index]['isPending'] == 1 ? true : false,
             ));
   }
 }
